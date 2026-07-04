@@ -1,0 +1,14 @@
+env: "development"
+port: 8000
+jwt:
+  expire: 3600
+  secret-key: "room-service"
+db:
+  host: "localhost"
+  port: 3306
+  user: "root"
+  password: "BlackRebel_666"
+  name: "room-service"
+  interval: 10
+  idle-conn: 5
+  open-conn: 10
