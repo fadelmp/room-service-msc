@@ -4,14 +4,15 @@ import (
 	"errors"
 	"room-service-msc/domain"
 	"room-service-msc/infrastructure/logging"
+	"time"
 
 	"gorm.io/gorm"
 )
 
 // Interface
 type HotelRepositoryInterface interface {
-	FindAll(*domain.HotelQueryModel) ([]*domain.Hotel, error)
-	FindOne(*domain.HotelQueryModel) (*domain.Hotel, error)
+	FindAll(*gorm.DB, *HotelQuery) ([]*domain.Hotel, error)
+	FindOne(*gorm.DB, *HotelQuery) (*domain.Hotel, error)
 
 	Create(*gorm.DB, *domain.Hotel) error
 	Update(*gorm.DB, *domain.Hotel) error
@@ -20,23 +21,29 @@ type HotelRepositoryInterface interface {
 
 // Class
 type HotelRepository struct {
-	db  *gorm.DB
 	log *logging.Context
 }
 
+type HotelQuery struct {
+	ID       string
+	Name     string
+	Code     string
+	CodeLike string
+	Status   string
+}
+
 // Constructor
-func NewHotelRepository(db *gorm.DB, log *logging.Context) *HotelRepository {
+func NewHotelRepository(log *logging.Context) *HotelRepository {
 	return &HotelRepository{
-		db:  db,
 		log: log,
 	}
 }
 
 // Implementation
-func (r *HotelRepository) FindAll(query *domain.HotelQueryModel) ([]*domain.Hotel, error) {
+func (r *HotelRepository) FindAll(db *gorm.DB, query *HotelQuery) ([]*domain.Hotel, error) {
 
 	var datas []*domain.Hotel
-	if err := r.db.Scopes(r.queryChain(query)).Find(&datas).Error; err != nil {
+	if err := db.Scopes(r.queryChain(query)).Find(&datas).Error; err != nil {
 		logging.Failed(r.log, err)
 		return nil, err
 	}
@@ -45,11 +52,11 @@ func (r *HotelRepository) FindAll(query *domain.HotelQueryModel) ([]*domain.Hote
 	return datas, nil
 }
 
-func (r *HotelRepository) FindOne(query *domain.HotelQueryModel) (*domain.Hotel, error) {
+func (r *HotelRepository) FindOne(db *gorm.DB, query *HotelQuery) (*domain.Hotel, error) {
 
 	// Get from DB
 	var data domain.Hotel
-	if err := r.db.Scopes(r.queryChain(query)).First(&data).Error; err != nil {
+	if err := db.Scopes(r.queryChain(query)).First(&data).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil // atau sentinel error domain.ErrHotelNotFound
 		}
@@ -61,9 +68,12 @@ func (r *HotelRepository) FindOne(query *domain.HotelQueryModel) (*domain.Hotel,
 	return &data, nil
 }
 
-func (r *HotelRepository) Create(tx *gorm.DB, data *domain.Hotel) error {
+func (r *HotelRepository) Create(db *gorm.DB, data *domain.Hotel) error {
 
-	if err := tx.Create(data).Error; err != nil {
+	data.CreatedAt = time.Now().Unix()
+	data.UpdatedAt = time.Now().Unix()
+
+	if err := db.Create(data).Error; err != nil {
 		logging.Failed(r.log, err)
 		return err
 	}
@@ -72,9 +82,11 @@ func (r *HotelRepository) Create(tx *gorm.DB, data *domain.Hotel) error {
 	return nil
 }
 
-func (r *HotelRepository) Update(tx *gorm.DB, data *domain.Hotel) error {
+func (r *HotelRepository) Update(db *gorm.DB, data *domain.Hotel) error {
 
-	if err := tx.Updates(data).Error; err != nil {
+	data.UpdatedAt = time.Now().Unix()
+
+	if err := db.Updates(data).Error; err != nil {
 		logging.Failed(r.log, err)
 		return err
 	}
@@ -83,10 +95,10 @@ func (r *HotelRepository) Update(tx *gorm.DB, data *domain.Hotel) error {
 	return nil
 }
 
-func (r *HotelRepository) Delete(tx *gorm.DB, id *string) error {
+func (r *HotelRepository) Delete(db *gorm.DB, id *string) error {
 
 	// Manual soft delete
-	if err := tx.Model(&domain.Hotel{}).Delete("id = ?", id).Error; err != nil {
+	if err := db.Where("id = ?", id).Delete(&domain.Hotel{}).Error; err != nil {
 		logging.Failed(r.log, err)
 		return err
 	}
@@ -95,12 +107,13 @@ func (r *HotelRepository) Delete(tx *gorm.DB, id *string) error {
 	return nil
 }
 
-func (r *HotelRepository) queryChain(query *domain.HotelQueryModel) func(db *gorm.DB) *gorm.DB {
+func (r *HotelRepository) queryChain(query *HotelQuery) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
 		db = r.idEqual(db, query.ID)
 		db = r.nameEqual(db, query.Name)
 		db = r.codeEqual(db, query.Code)
+		db = r.codeLike(db, query.CodeLike)
 
 		return db
 	}
@@ -128,4 +141,13 @@ func (r *HotelRepository) codeEqual(db *gorm.DB, code string) *gorm.DB {
 		return db.Where("code = ?", code)
 	}
 	return db
+}
+
+func (r *HotelRepository) codeLike(db *gorm.DB, code string) *gorm.DB {
+
+	if code == "" {
+		return db
+	}
+
+	return db.Where("code LIKE %" + code + "%")
 }

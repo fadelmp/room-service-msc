@@ -12,3 +12,11 @@ db:
   interval: 10
   idle-conn: 5
   open-conn: 10
+default-value:
+  timezone: "Asia/Jakarta"
+  breakfast:
+    time: "06.00-10.00"
+    location: "LANTAI_1"
+  checkout:
+    time: "12.00"
+    late-policy: "DIKENAKAN_BIAYA_TAMBAHAN"

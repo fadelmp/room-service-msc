@@ -6,6 +6,7 @@ import (
 )
 
 type HotelMapperInterface interface {
+	CreateDefaultHotel(string, *dto.CreateHotelDto) *domain.Hotel
 	ToHotelDtoList([]*domain.Hotel) []*dto.HotelDto
 	ToHotelDto(*domain.Hotel) *dto.HotelDto
 	ToHotel(*dto.HotelDto) *domain.Hotel

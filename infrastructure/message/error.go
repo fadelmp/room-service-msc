@@ -1,20 +1,16 @@
 package message
 
 var (
-	Failed          = "Failed"
-	ErrInitializeDB = "Error Initialize Database"
-	ErrBeginTrx     = "Error Begin Transaction"
+	Failed          = "FAILED"
+	ErrInitializeDB = "ERROR_INITIALIZE_DATABASE"
+	ErrBeginTrx     = "ERROR_BEGIN_TRANSACTIONS"
 
-	ErrFailedGetBrand    = "Error Failed Get Brand"
-	ErrBrandNotFound     = "Error Brand Not Found"
-	ErrBrandExists       = "Error Brand Exists"
-	ErrCreateBrandFailed = "Error Create Brand Failed"
-	ErrUpdateBrandFailed = "Error Update Brand Failed"
-	ErrDeleteBrandFailed = "Error Delete Brand Failed"
+	ErrHotelExists       = "ERROR_HOTEL_ALREADY_EXISTS"
+	ErrGenerateHotelCode = "ERROR_GENERATE_HOTEL_CODE"
 
-	ErrFailedGetHotel    = "Error Failed Get Hotel"
-	ErrHotelNotFound     = "Error Hotel Not Found"
-	ErrCreateHotelFailed = "Error Create Hotel Failed"
-	ErrUpdateHotelFailed = "Error Update Hotel Failed"
-	ErrDeleteHotelFailed = "Error Delete Hotel Failed"
+	ErrFailedGetHotel    = "ERROR_FAILED_TO_GET_HOTEL"
+	ErrHotelNotFound     = "ERROR_HOTEL_NOT_FOUND"
+	ErrCreateHotelFailed = "ERROR_CREATE_HOTEL"
+	ErrUpdateHotelFailed = "ERROR_UPDATE_HOTEL"
+	ErrDeleteHotelFailed = "ERROR_DELETE_HOTEL"
 )
