@@ -14,7 +14,6 @@ import (
 )
 
 type HotelUsecase interface {
-	ValidateHotel(*gorm.DB, string) (bool, error)
 	CreateDefaultHotel(*dto.CreateHotelDto) (*dto.HotelDto, error)
 }
 
@@ -34,20 +33,6 @@ func NewHotelUsecase(
 		hotelRepo:     hotelRepo,
 		hotelCodeRepo: hotelCodeRepo,
 	}
-}
-
-func (u *hotelUsecase) ValidateHotel(db *gorm.DB, hotelID string) (bool, error) {
-
-	hotel, err := u.hotelRepo.FindOne(db, &repository.HotelQuery{ID: hotelID})
-	if err != nil {
-		return false, errors.New(message.ErrGetDataFromDB)
-	}
-
-	if hotel == nil {
-		return false, nil
-	}
-
-	return true, nil
 }
 
 func (u *hotelUsecase) CreateDefaultHotel(hotelDto *dto.CreateHotelDto) (*dto.HotelDto, error) {

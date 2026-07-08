@@ -7,6 +7,7 @@ import (
 	"room-service-msc/infrastructure/message"
 	"room-service-msc/mapper"
 	"room-service-msc/repository"
+	"room-service-msc/service"
 	"room-service-msc/utils"
 
 	"gorm.io/gorm"
@@ -18,18 +19,18 @@ type FoodMenuUsecase interface {
 
 type foodMenuUsecase struct {
 	mapper       mapper.FoodMenuMapper
-	hotelUsecase HotelUsecase
+	hotelService service.HotelService
 	repo         repository.FoodMenuRepository
 }
 
 func NewFoodMenuUsecase(
 	mapper mapper.FoodMenuMapper,
-	hotelUsecase HotelUsecase,
+	hotelService service.HotelService,
 	repo repository.FoodMenuRepository,
 ) FoodMenuUsecase {
 	return &foodMenuUsecase{
 		mapper:       mapper,
-		hotelUsecase: hotelUsecase,
+		hotelService: hotelService,
 		repo:         repo,
 	}
 }
@@ -41,25 +42,15 @@ func (u *foodMenuUsecase) Create(foodMenuDto *dto.FoodMenuDto) (*dto.FoodMenuDto
 		return nil, errors.New(message.ErrInitializeDB)
 	}
 
-	isFoodMenuNotExists, err := u.validateName(inst, foodMenuDto.Name)
+	err = u.validateName(inst, foodMenuDto.Name, foodMenuDto.HotelID)
 	if err != nil {
 		return nil, errors.New(message.ErrFoodMenuExists)
 	}
 
-	if !isFoodMenuNotExists {
-		return nil, errors.New(message.ErrFoodMenuExists)
-	}
-
-	isHotelExists, err := u.hotelUsecase.ValidateHotel(inst, foodMenuDto.HotelID)
+	err = u.hotelService.IsExistsHotel(inst, foodMenuDto.HotelID)
 	if err != nil {
-		return nil, errors.New(message.ErrHotelNotFound)
+		return nil, err
 	}
-
-	if !isHotelExists {
-		return nil, errors.New(message.ErrHotelNotFound)
-	}
-
-	tx := inst.Begin()
 
 	foodMenu := u.mapper.ToFoodMenu(foodMenuDto)
 
@@ -67,6 +58,8 @@ func (u *foodMenuUsecase) Create(foodMenuDto *dto.FoodMenuDto) (*dto.FoodMenuDto
 	if err != nil {
 		return nil, errors.New(message.Failed)
 	}
+
+	tx := inst.Begin()
 
 	if err := u.repo.Create(tx, foodMenu); err != nil {
 		tx.Rollback()
@@ -78,16 +71,16 @@ func (u *foodMenuUsecase) Create(foodMenuDto *dto.FoodMenuDto) (*dto.FoodMenuDto
 	return u.mapper.ToFoodMenuDto(foodMenu), nil
 }
 
-func (u *foodMenuUsecase) validateName(db *gorm.DB, name string) (bool, error) {
+func (u *foodMenuUsecase) validateName(db *gorm.DB, name, hotelID string) error {
 
-	foodMenu, err := u.repo.FindOne(db, &repository.FoodMenuQuery{Name: name})
+	foodMenu, err := u.repo.FindOne(db, &repository.FoodMenuQuery{Name: name, HotelID: hotelID})
 	if err != nil {
-		return false, errors.New(message.ErrGetDataFromDB)
+		return errors.New(message.ErrGetDataFromDB)
 	}
 
 	if foodMenu == nil {
-		return false, nil
+		return message.ErrHotelNotFound
 	}
 
-	return true, nil
+	return nil
 }

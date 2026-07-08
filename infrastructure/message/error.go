@@ -1,16 +1,21 @@
 package message
 
+import "errors"
+
 var (
 	Failed           = "FAILED"
 	ErrInitializeDB  = "ERROR_INITIALIZE_DATABASE"
 	ErrGetDataFromDB = "ERROR_GET_DATA_FROM_DATABASE"
 	ErrBeginTrx      = "ERROR_BEGIN_TRANSACTIONS"
 
+	ErrValidateHotel = errors.New("ERROR_VALIDATE_HOTEL")
+	ErrHotelNotFound = errors.New("ERROR_HOTEL_NOT_FOUND")
+
 	ErrHotelExists       = "ERROR_HOTEL_ALREADY_EXISTS"
 	ErrGenerateHotelCode = "ERROR_GENERATE_HOTEL_CODE"
 
-	ErrFailedGetHotel    = "ERROR_FAILED_TO_GET_HOTEL"
-	ErrHotelNotFound     = "ERROR_HOTEL_NOT_FOUND"
+	ErrFailedGetHotel = "ERROR_FAILED_TO_GET_HOTEL"
+
 	ErrCreateHotelFailed = "ERROR_CREATE_HOTEL"
 	ErrUpdateHotelFailed = "ERROR_UPDATE_HOTEL"
 	ErrDeleteHotelFailed = "ERROR_DELETE_HOTEL"
