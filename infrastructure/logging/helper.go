@@ -7,11 +7,6 @@ import (
 	"go.uber.org/zap"
 )
 
-/*
-Contoh runtime func name:
-smart-hotel/repository.(*accessRepository).FindOne
-*/
-
 func callerName() string {
 	for i := 2; i < 10; i++ {
 		pc, _, _, ok := runtime.Caller(i)
@@ -35,39 +30,20 @@ func callerName() string {
 
 /* ===== Public API ===== */
 
-func NewRepositoryContext() *Context {
-	return &Context{layer: LayerRepository}
+func Success(id string, fields ...zap.Field) {
+	L().Info("success", append(baseFields(), zap.String("id", id))...)
 }
 
-func NewUsecaseContext() *Context {
-	return &Context{layer: LayerUsecase}
+func SuccessList(count int, fields ...zap.Field) {
+	L().Info("success", append(baseFields(), zap.Int("count", count))...)
 }
 
-func Start(c *Context, fields ...zap.Field) {
-	L().Info("start", append(baseFields(c), fields...)...)
+func Failed(err error, fields ...zap.Field) {
+	L().Error("failed", append(baseFields(), zap.String("error", err.Error()))...)
 }
 
-func Success(c *Context, id string, fields ...zap.Field) {
-	L().Info("success",
-		append(baseFields(c), zap.String("id", id))...,
-	)
-}
-
-func SuccessList(c *Context, count int, fields ...zap.Field) {
-	L().Info("success",
-		append(baseFields(c), zap.Int("count", count))...,
-	)
-}
-
-func Failed(c *Context, err error, fields ...zap.Field) {
-	L().Error("failed",
-		append(baseFields(c), zap.String("error", err.Error()))...,
-	)
-}
-
-func baseFields(c *Context) []zap.Field {
+func baseFields() []zap.Field {
 	return []zap.Field{
-		zap.String("layer", string(c.layer)),
 		zap.String("caller", callerName()),
 	}
 }

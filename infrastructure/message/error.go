@@ -1,9 +1,10 @@
 package message
 
 var (
-	Failed          = "FAILED"
-	ErrInitializeDB = "ERROR_INITIALIZE_DATABASE"
-	ErrBeginTrx     = "ERROR_BEGIN_TRANSACTIONS"
+	Failed           = "FAILED"
+	ErrInitializeDB  = "ERROR_INITIALIZE_DATABASE"
+	ErrGetDataFromDB = "ERROR_GET_DATA_FROM_DATABASE"
+	ErrBeginTrx      = "ERROR_BEGIN_TRANSACTIONS"
 
 	ErrHotelExists       = "ERROR_HOTEL_ALREADY_EXISTS"
 	ErrGenerateHotelCode = "ERROR_GENERATE_HOTEL_CODE"
@@ -13,4 +14,7 @@ var (
 	ErrCreateHotelFailed = "ERROR_CREATE_HOTEL"
 	ErrUpdateHotelFailed = "ERROR_UPDATE_HOTEL"
 	ErrDeleteHotelFailed = "ERROR_DELETE_HOTEL"
+
+	ErrFoodMenuNotFound = "ERROR_FOOD_MENU_NOT_FOUND"
+	ErrFoodMenuExists   = "ERROR_FOOD_MENU_EXISTS"
 )

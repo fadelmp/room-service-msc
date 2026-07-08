@@ -13,11 +13,12 @@ import (
 	"gorm.io/gorm"
 )
 
-type HotelUsecaseInterface interface {
-	CreateDefaultHotel(*dto.HotelDto) (*dto.HotelDto, error)
+type HotelUsecase interface {
+	ValidateHotel(*gorm.DB, string) (bool, error)
+	CreateDefaultHotel(*dto.CreateHotelDto) (*dto.HotelDto, error)
 }
 
-type HotelUsecase struct {
+type hotelUsecase struct {
 	mapper        mapper.HotelMapper
 	hotelRepo     repository.HotelRepository
 	hotelCodeRepo repository.HotelCodeRepository
@@ -28,14 +29,28 @@ func NewHotelUsecase(
 	hotelRepo repository.HotelRepository,
 	hotelCodeRepo repository.HotelCodeRepository,
 ) HotelUsecase {
-	return HotelUsecase{
+	return &hotelUsecase{
 		mapper:        mapper,
 		hotelRepo:     hotelRepo,
 		hotelCodeRepo: hotelCodeRepo,
 	}
 }
 
-func (u *HotelUsecase) CreateDefaultHotel(hotelDto *dto.CreateHotelDto) (*dto.HotelDto, error) {
+func (u *hotelUsecase) ValidateHotel(db *gorm.DB, hotelID string) (bool, error) {
+
+	hotel, err := u.hotelRepo.FindOne(db, &repository.HotelQuery{ID: hotelID})
+	if err != nil {
+		return false, errors.New(message.ErrGetDataFromDB)
+	}
+
+	if hotel == nil {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+func (u *hotelUsecase) CreateDefaultHotel(hotelDto *dto.CreateHotelDto) (*dto.HotelDto, error) {
 
 	// inst, err := db.DBInstance()
 	// if err != nil {
@@ -71,7 +86,7 @@ func (u *HotelUsecase) CreateDefaultHotel(hotelDto *dto.CreateHotelDto) (*dto.Ho
 	return nil, nil
 }
 
-func (u *HotelUsecase) checkHotelName(inst *gorm.DB, hotelDto *dto.CreateHotelDto) (*domain.Hotel, error) {
+func (u *hotelUsecase) checkHotelName(inst *gorm.DB, hotelDto *dto.CreateHotelDto) (*domain.Hotel, error) {
 
 	hotel, err := u.hotelRepo.FindOne(inst, &repository.HotelQuery{Name: hotelDto.Name})
 	if err != nil {
@@ -81,7 +96,7 @@ func (u *HotelUsecase) checkHotelName(inst *gorm.DB, hotelDto *dto.CreateHotelDt
 	return hotel, nil
 }
 
-func (u *HotelUsecase) generateHotelCode(tx *gorm.DB, hotelDto *dto.CreateHotelDto) (*string, error) {
+func (u *hotelUsecase) generateHotelCode(tx *gorm.DB, hotelDto *dto.CreateHotelDto) (*string, error) {
 
 	prefix := utils.GetCode(hotelDto.Name)
 
