@@ -4,7 +4,6 @@ import (
 	"errors"
 	"room-service-msc/domain"
 	"room-service-msc/infrastructure/logging"
-	"room-service-msc/utils"
 	"time"
 
 	"gorm.io/gorm"
@@ -107,10 +106,10 @@ func (r *hotelRepository) Delete(db *gorm.DB, id string) error {
 func (r *hotelRepository) queryChain(query *HotelQuery) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
-		db = utils.WhereEqual(db, "id", query.ID)
-		db = utils.WhereEqual(db, "name", query.Name)
-		db = utils.WhereEqual(db, "code", query.Code)
-		db = utils.WhereLike(db, "code", query.CodeLike)
+		db = WhereEqual(db, "id", query.ID)
+		db = WhereEqual(db, "name", query.Name)
+		db = WhereEqual(db, "code", query.Code)
+		db = WhereLike(db, "code", query.CodeLike)
 
 		return db
 	}

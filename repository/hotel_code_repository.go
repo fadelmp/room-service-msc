@@ -4,7 +4,6 @@ import (
 	"errors"
 	"room-service-msc/domain"
 	"room-service-msc/infrastructure/logging"
-	"room-service-msc/utils"
 	"time"
 
 	"gorm.io/gorm"
@@ -75,7 +74,7 @@ func (r *hotelCodeRepository) Create(db *gorm.DB, data *domain.Hotel) error {
 func (r *hotelCodeRepository) queryChain(query *HotelCodeQuery) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
-		db = utils.WhereEqual(db, "code", query.Code)
+		db = WhereEqual(db, "code", query.Code)
 
 		return db
 	}

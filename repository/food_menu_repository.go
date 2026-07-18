@@ -5,7 +5,6 @@ import (
 	"room-service-msc/domain"
 	"room-service-msc/infrastructure/logging"
 	"room-service-msc/infrastructure/message"
-	"room-service-msc/utils"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -25,10 +24,14 @@ type FoodMenuRepository interface {
 type foodMenuRepository struct{}
 
 type FoodMenuQuery struct {
-	ID       string
-	HotelID  string
-	Name     string
-	Category string
+	ID              string
+	HotelID         string
+	Name            string
+	NameLike        string
+	DescriptionLike string
+	Category        string
+	Categories      []string
+	Availability    *bool
 }
 
 // Constructor
@@ -102,10 +105,14 @@ func (r *foodMenuRepository) Delete(db *gorm.DB, id string) error {
 func (r *foodMenuRepository) queryChain(query *FoodMenuQuery) func(db *gorm.DB) *gorm.DB {
 
 	return func(db *gorm.DB) *gorm.DB {
-		db = utils.WhereEqual(db, "id", query.ID)
-		db = utils.WhereEqual(db, "name", query.Name)
-		db = utils.WhereEqual(db, "hotel_id", query.HotelID)
-		db = utils.WhereEqual(db, "category", query.Category)
+		db = WhereEqual(db, "id", query.ID)
+		db = WhereEqual(db, "hotel_id", query.HotelID)
+		db = WhereEqual(db, "name", query.Name)
+		db = WhereLike(db, "name", query.NameLike)
+		db = WhereLike(db, "description", query.DescriptionLike)
+		db = WhereEqual(db, "category", query.Category)
+		db = WhereIn(db, "category", query.Categories)
+		db = WherePtr(db, "category", query.Availability)
 
 		return db
 	}
